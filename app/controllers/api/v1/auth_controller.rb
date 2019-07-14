@@ -6,22 +6,29 @@ module Api
       include AuthenticationConcern
       def register
         user = User.create(register_params)
-
-        render json: {
-          message: 'Successfully registered',
-          token: create_token(user),
-          user: user,
-        }, status: :created
+        if user.valid?
+          render_created({ 
+            user: user, 
+            token: create_token(user) 
+          }, message: 'Successfully registered user')
+        else
+          render_unproccessable(user)
+        end
       end
       
       def login
-        # TODO: use sms service to send a token to the user
+        # TODO: use sms service to send verification code to the user
         user = User.find_by(phone: login_params[:phone])
-
-        render json: { 
-          message: 'Successfully logged in',
-          token: create_token(user),
+        render_response({
           user: user,
+          token: create_token(user),
+        }, message: 'Successfully logged in')
+      end
+
+      def get_info
+        render json: {
+          message: 'Successfully retrieved info',
+          user: @user,
         }, status: :ok
       end
 
