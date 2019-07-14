@@ -56,6 +56,49 @@ RSpec.describe "Authentication", type: :request do
       it 'returns a token' do
         expect(json_response[:token]).not_to be_nil
       end
+
+      context 'when user visits protected route with token' do
+        it 'does not return status 401' do
+          get api_v1_info_url, headers: { 
+            'Authorization': "Bearer #{json_response[:token]}"
+          }
+          expect(response).not_to have_http_status(:unauthorized)
+        end
+      end
+    end
+  end
+
+  describe 'GET /auth/info' do
+    context 'when user is not authenticated' do
+      before(:all) do 
+        get api_v1_info_url
+      end
+      it 'returns status 401' do
+        expect(response).to have_http_status(:unauthorized)
+      end
+      it 'contains unauthenticated message' do
+        expect(json_response[:message]).to include('Unauthenticated')
+      end
+    end
+
+    context 'when user is authenticated' do
+      before(:each) do
+        @user = create(:user)
+        stub_user(@user)
+        get api_v1_info_url
+      end
+
+      it 'returns status 200' do
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'returns user information' do
+        expect(json_response[:user]).to include({
+          id: @user.id,
+          name: @user.name,
+          phone: @user.phone
+        })
+      end
     end
   end
 end

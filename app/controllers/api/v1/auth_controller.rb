@@ -1,9 +1,8 @@
-require 'jwt'
-
 module Api
   module V1
     class AuthController < ApplicationController
       include AuthenticationConcern
+      skip_before_action :login_required!, only: %i[register login]
 
       def register
         user = User.create(register_params)

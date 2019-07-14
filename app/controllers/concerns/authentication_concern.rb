@@ -3,7 +3,6 @@ module AuthenticationConcern
 
   included do
     before_action :login_required!
-    before_action :set_user_from_token!
   end
 
   def create_token(user)
@@ -17,8 +16,22 @@ module AuthenticationConcern
   private
 
   def login_required!
+    encoded_token = get_token_from_header
+    token = decode_token(encoded_token)
+    @user = token[0]
+  rescue JWT::VerificationError, JWT::IncorrectAlgorithm, JWT::DecodeError
+    render_response({}, :unauthorized, message: 'Unauthenticated')
   end
 
-  def set_user_from_token!
+  def decode_token(token)
+    jwt_config = Rails.configuration.jwt
+    hmac_secret = jwt_config[:hmac_secret]
+    JWT.decode(token, hmac_secret, true, { algorithm: 'HS256'})
+  end
+
+  def get_token_from_header
+    header = request.headers['Authorization']
+    return nil unless header
+    header.split(' ').last
   end
 end

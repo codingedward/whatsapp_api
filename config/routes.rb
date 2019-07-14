@@ -6,6 +6,7 @@ Rails.application.routes.draw do
         post 'login', to: 'auth#login'
         delete 'logout', to: 'auth#logout'
         put 'refresh', to: 'auth#refresh_token'
+        get 'info', to: 'auth#get_info'
       end
     end
   end
