@@ -1,6 +1,10 @@
 module ResponseConcern
   extend ActiveSupport::Concern
 
+  def render_ok(content, message: '', &block)
+    render_response(content, :ok, message: message, &block)
+  end
+
   def render_created(content, message: '', &block)
     render_response(content, :created, message: message, &block)
   end
