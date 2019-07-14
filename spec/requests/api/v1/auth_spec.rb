@@ -1,9 +1,9 @@
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe "Authentication", type: :request do
-  describe 'POST /auth/register' do
-    context 'when user submits incorrect details' do
-      it 'returns validation error' do
+  describe "POST /auth/register" do
+    context "when user submits incorrect details" do
+      it "returns validation error" do
         post api_v1_register_url, params: attributes_for(:user, phone: nil)
         expect(response).to have_http_status(:unprocessable_entity)
 
@@ -12,54 +12,54 @@ RSpec.describe "Authentication", type: :request do
       end
     end
 
-    context 'when user submits correct details' do
+    context "when user submits correct details" do
       before(:all) do
         post api_v1_register_url, params: attributes_for(:user)
       end
 
-      it 'returns status 201' do
+      it "returns status 201" do
         expect(response).to have_http_status(:created)
       end
 
-      it 'returns a token' do
+      it "returns a token" do
         expect(json_response[:token]).not_to be_nil
       end
 
-      it 'registers the user' do
-        expect(json_response[:message]).to include('registered')
+      it "registers the user" do
+        expect(json_response[:message]).to include("registered")
       end
     end
   end
 
-  describe 'POST /auth/login' do
+  describe "POST /auth/login" do
     before(:all) do
       create(:user)
     end
 
-    context 'when user submits invalid credentials' do
-      it 'returns invalid login error' do
-        post api_v1_login_url params: { phone: 'clearly invalid phone' }
+    context "when user submits invalid credentials" do
+      it "returns invalid login error" do
+        post api_v1_login_url params: { phone: "clearly invalid phone" }
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_response[:message]).to include('Invalid credentials')
+        expect(json_response[:message]).to include("Invalid credentials")
       end
     end
 
-    context 'when user submits valid credentials' do
+    context "when user submits valid credentials" do
       before(:all) do
         post api_v1_login_url params: { phone: User.first.phone }
       end
 
-      it 'returns status 200' do
+      it "returns status 200" do
         expect(response).to have_http_status(:ok)
       end
 
-      it 'returns a token' do
+      it "returns a token" do
         expect(json_response[:token]).not_to be_nil
       end
 
-      context 'when user visits protected route with token' do
-        it 'does not return status 401' do
-          get api_v1_info_url, headers: { 
+      context "when user visits protected route with token" do
+        it "does not return status 401" do
+          get api_v1_info_url, headers: {
             'Authorization': "Bearer #{json_response[:token]}"
           }
           expect(response).not_to have_http_status(:unauthorized)
@@ -68,36 +68,36 @@ RSpec.describe "Authentication", type: :request do
     end
   end
 
-  describe 'GET /auth/info' do
-    context 'when user is not authenticated' do
-      before(:all) do 
+  describe "GET /auth/info" do
+    context "when user is not authenticated" do
+      before(:all) do
         get api_v1_info_url
       end
-      it 'returns status 401' do
+      it "returns status 401" do
         expect(response).to have_http_status(:unauthorized)
       end
-      it 'contains unauthenticated message' do
-        expect(json_response[:message]).to include('Unauthenticated')
+      it "contains unauthenticated message" do
+        expect(json_response[:message]).to include("Unauthenticated")
       end
     end
 
-    context 'when user is authenticated' do
+    context "when user is authenticated" do
       before(:each) do
         @user = create(:user)
         stub_user(@user)
         get api_v1_info_url
       end
 
-      it 'returns status 200' do
+      it "returns status 200" do
         expect(response).to have_http_status(:ok)
       end
 
-      it 'returns user information' do
-        expect(json_response[:user]).to include({
+      it "returns user information" do
+        expect(json_response[:user]).to include(
           id: @user.id,
           name: @user.name,
-          phone: @user.phone
-        })
+          phone: @user.phone,
+        )
       end
     end
   end

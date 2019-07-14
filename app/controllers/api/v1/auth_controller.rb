@@ -7,36 +7,34 @@ module Api
       def register
         user = User.create(register_params)
         if user.valid?
-          render_created({ 
-            user: user, 
-            token: create_token(user) 
-          }, message: 'Successfully registered user')
+          render_created({
+                           user: user,
+                           token: create_token(user)
+                         }, message: "Successfully registered user")
         else
           render_unproccessable(user)
         end
       end
-      
+
       def login
         # TODO: use sms service to send verification code to the user
-        user = User.find_by_phone(login_params[:phone])
+        user = User.find_by(phone: login_params[:phone])
         if user.nil?
           render_unproccessable(message: "Invalid credentials")
         else
           render_ok({
-            token: create_token(user)
-          }, message: 'Successfully logged in')
+                      token: create_token(user)
+                    }, message: "Successfully logged in")
         end
       end
 
       def get_info
-        render_ok(@user, message: 'Successfully retrieved info')
+        render_ok(@user, message: "Successfully retrieved info")
       end
 
-      def logout
-      end
+      def logout; end
 
-      def refresh_token
-      end
+      def refresh_token; end
 
       private
 
