@@ -29,10 +29,7 @@ module Api
       end
 
       def get_info
-        render json: {
-          message: 'Successfully retrieved info',
-          user: @user,
-        }, status: :ok
+        render_ok(@user, message: 'Successfully retrieved info')
       end
 
       def logout

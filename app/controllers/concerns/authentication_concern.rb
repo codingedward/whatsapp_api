@@ -9,7 +9,7 @@ module AuthenticationConcern
     jwt_config = Rails.configuration.jwt
     hmac_secret = jwt_config[:hmac_secret]
     valid_until = jwt_config[:valid_duration].from_now
-    payload = { name: user.name, phone: user.phone, exp: valid_until.to_i}
+    payload = { id: user.id, phone: user.phone, exp: valid_until.to_i}
     JWT.encode(payload, hmac_secret, 'HS256')
   end
 
@@ -18,7 +18,7 @@ module AuthenticationConcern
   def login_required!
     encoded_token = get_token_from_header
     token = decode_token(encoded_token)
-    @user = token[0]
+    @user = User.find(token[0]['id'])
   rescue JWT::VerificationError, JWT::IncorrectAlgorithm, JWT::DecodeError
     render_response({}, :unauthorized, message: 'Unauthenticated')
   end
