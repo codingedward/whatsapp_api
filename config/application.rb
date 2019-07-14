@@ -31,5 +31,10 @@ module Api
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    config.jwt = {
+      valid_duration: 2.weeks,
+      hmac_secret: Rails.application.credentials.secret_key_base
+    }
   end
 end
