@@ -23,18 +23,25 @@ module Api
           render_unproccessable(message: "Invalid credentials")
         else
           render_ok({
+                      user: user,
                       token: create_token(user)
                     }, message: "Successfully logged in")
         end
       end
 
       def get_info
-        render_ok(@user, message: "Successfully retrieved info")
+        render_ok(@auth_user, message: "Successfully retrieved info")
       end
 
-      def logout; end
+      def logout
+        JwtBlacklist.create(token: @auth_token)
+        render_ok(message: "Successfully logged out")
+      end
 
-      def refresh_token; end
+      def refresh_token
+        render_ok({ token: create_token(@auth_user) },
+                  message: "Successfully refreshed token")
+      end
 
       private
 

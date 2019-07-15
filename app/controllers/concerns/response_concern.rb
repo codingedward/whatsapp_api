@@ -13,7 +13,7 @@ module ResponseConcern
     render_response(content, :unprocessable_entity, message: message, &block)
   end
 
-  def render_response(content, status = :ok, message: "")
+  def render_response(content = {}, status = :ok, message: "")
     if block_given?
       yield(content, status)
     elsif content.is_a? ApplicationRecord

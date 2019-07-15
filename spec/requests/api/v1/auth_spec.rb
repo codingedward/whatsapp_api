@@ -82,9 +82,9 @@ RSpec.describe "Authentication", type: :request do
     end
 
     context "when user is authenticated" do
+      let (:user) { create(:user) }
       before(:each) do
-        @user = create(:user)
-        stub_user(@user)
+        stub_user(user)
         get api_v1_info_url
       end
 
@@ -94,10 +94,41 @@ RSpec.describe "Authentication", type: :request do
 
       it "returns user information" do
         expect(json_response[:user]).to include(
-          id: @user.id,
-          name: @user.name,
-          phone: @user.phone,
+          id: user.id,
+          name: user.name,
+          phone: user.phone,
         )
+      end
+    end
+  end
+
+  describe "DELETE /auth/logout" do
+    context "when user logs out" do
+      context "when user has a valid token" do
+        before(:all) do
+          create(:user)
+          post api_v1_login_url params: { phone: User.first.phone }
+        end
+
+        let(:auth_headers) do
+          { "Authorization" => "Bearer #{json_response[:token]}" }
+        end
+
+        it "logs out the user" do
+          delete api_v1_logout_url, headers: auth_headers
+          expect(response).to have_http_status(200)
+
+          get api_v1_info_url, headers: auth_headers
+          expect(response).to have_http_status(401)
+          expect(json_response[:message]).to include("Unauthenticated")
+        end
+      end
+
+      context "when user does not have a valid token" do
+        it "returns status 401" do
+          delete api_v1_logout_url
+          expect(response).to have_http_status(401)
+        end
       end
     end
   end

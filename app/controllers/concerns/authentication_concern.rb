@@ -16,12 +16,15 @@ module AuthenticationConcern
   private
 
   def login_required!
-    encoded_token = get_token_from_header
-    token = decode_token(encoded_token)
-    @user = User.find(token[0]["id"])
-  rescue JWT::VerificationError, JWT::IncorrectAlgorithm, JWT::DecodeError,
-         ActiveRecord::RecordNotFound
-    render_response({}, :unauthorized, message: "Unauthenticated")
+    @auth_token = get_token_from_header
+    decoded_token = decode_token(@auth_token)
+    @auth_user = User.find(decoded_token[0]["id"])
+  rescue JWT::VerificationError, JWT::IncorrectAlgorithm,
+         JWT::DecodeError, ActiveRecord::RecordNotFound => error
+  ensure
+    if error || token_blacklisted?(@auth_token)
+      render_response({}, :unauthorized, message: "Unauthenticated")
+    end
   end
 
   def decode_token(token)
@@ -34,5 +37,9 @@ module AuthenticationConcern
     header = request.headers["Authorization"]
     return nil unless header
     header.split(" ").last
+  end
+
+  def token_blacklisted?(token)
+    JwtBlacklist.exists?(token: token)
   end
 end
